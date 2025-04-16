@@ -1,0 +1,604 @@
+//Utilizando el patrón "Composite"
+
+package Sistema_Cine;
+import java.time.LocalTime;
+import java.util.*;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+//______________________________________________________________________________________________________________//
+// Clase controladora: se encargará de coordinar la lógica del sistema. Esta clase implementará los métodos de negocio, es decir, el flujo de funcionamiento del sistema
+public class SistemaCine {
+    private Cartelera cartelera;
+    private Sala sala;
+    private Pago pago;
+
+    // Constructo de la clase Sistema
+    public SistemaCine (Cartelera cartelera, Sala sala, Pago pago) {
+        this.cartelera = cartelera;
+        this.sala = sala;
+        this.pago = pago;
+    }
+
+    public Cartelera getCartelera() {
+        return cartelera;
+    }
+
+    public Sala getSala() {
+        return sala;
+    }
+
+    public Pago getPago() {
+        return pago;
+    }
+
+    public void setCartelera(Cartelera cartelera) {
+        this.cartelera = cartelera;
+    }
+
+    public void setSala(Sala sala) {
+        this.sala = sala;
+    }
+
+    public void setPago(Pago pago) {
+        this.pago = pago;
+    }
+    public void FlujoPrincipal () {
+        System.out.println("Sala: " + getSala().toString());
+        System.out.println("Horario: " + getSala().getHorario());
+        System.out.println("Asientos:" + getSala().getAsientos());
+    }
+
+    //______________________________________________________________________________________________________________//
+    //Metodo main para hacer pruebas
+    public static void main(String[] args) {
+        System.out.println("Bienvenidos al Cine Interestelar");
+        System.out.println("A continuación, se visualizará la Cartelera disponible.");
+
+        Cartelera cartelera1 = new Cartelera ("Martes 21");
+        Cartelera cartelera2 = new Cartelera("Miércoles 22");
+
+        // Creamos Películas para las pruebas. Se añaden solas a Cartelera
+        new Pelicula("V de Vendetta", "Aventura/Acción", 180, cartelera1);
+        new Pelicula("Freddy vs Jason", "Terror", 166, cartelera1);
+        new Pelicula("Avatar 2", "Ciencia Ficción", 210, cartelera2);
+        new Pelicula("El Silencio de Los Inocentes", "Suspenso", 185, cartelera1);
+        new Pelicula("Arma Mortal 4", "Acción", 190, cartelera2);
+
+        // Selección de cartelera
+        System.out.println("Seleccione una Cartelera:");
+        System.out.println("1. Cartelera del " + cartelera1.getDiaSemana());
+        System.out.println("2. Cartelera del " + cartelera2.getDiaSemana());
+        System.out.print("Ingrese el número de la cartelera: ");
+
+        Scanner scanner = new Scanner(System.in);
+
+         int opcionCartelera = scanner.nextInt();
+         Cartelera seleccionada = null;
+         if (opcionCartelera == 1) {
+             seleccionada = cartelera1;
+         } else if (opcionCartelera == 2) {
+             seleccionada = cartelera2;
+         } else {
+             System.out.println("Opción Inválida.");
+             return;
+         }
+
+        // Mostrar películas de la cartelera seleccionada
+        System.out.println("Películas disponibles en la cartelera del " + seleccionada.getDiaSemana() + ":");
+        seleccionada.mostrarPeliculas();
+
+        // Selección de película
+        System.out.print("Seleccione una película por número: ");
+        int opcionPelicula = scanner.nextInt();
+
+        if (opcionPelicula > 0 && opcionPelicula <= seleccionada.getPeliculas().size()) {
+            Pelicula elegida = seleccionada.getPeliculas().get(opcionPelicula - 1);
+            System.out.println("Ha seleccionado: " + elegida.getNombrePelicula());
+        } else {
+            System.out.println("Número inválido.");
+        }
+
+
+        System.out.println("El sistema funciona prueba #001");
+
+        //Crear un objeto Horario para la sala
+        Horario horario = new Horario("12:40PM", "22:30PM");
+
+        //Crear Sala
+        Sala sala1 = new Sala(1, horario, 10);
+
+        //Reservar Asiento
+        if (sala1.reservarAsiento("3")) {
+            System.out.println("Asiento 3 reservado con éxito.");
+        }
+        //Mostrar estado de sala actualizado
+        sala1.mostrarSala();
+        //Intentamos reservar asiento 3
+        sala1.reservarAsiento(("3"));
+
+        System.out.println("El sistema funciona prueba #004");
+        Factura factura = new Factura("FAC123", "Juan Pérez");
+        TarjetaCredito tarjeta = new TarjetaCredito("1234-5678-9876-5432", 202601, 321);
+        Pago pago = new Pago(1500.0, tarjeta, factura);
+
+        pago.procesarPago();
+
+    }
+}
+//______________________________________________________________________________________________________________//
+class Usuario {
+    private String nombre;
+    private String correo;
+    private List<Pelicula> peliculasSeleccionadas; // Declaramos el atributo tipo array con la selección de peliculas por parte del usuario del usuario
+
+    // Constructor de la clase Usuario
+    public Usuario (String nombre, String correo){
+       this.nombre = nombre;
+       this.correo = correo;
+       this.peliculasSeleccionadas = new ArrayList<>();
+    }
+// Getters y setters de la clase Usuario
+    public String getNombre() {
+        return nombre;
+    }
+
+    public String getCorreo() {
+        return correo;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public void setCorreo(String correo) {
+        this.correo = correo;
+    }
+    // Método adicional para llamar a la clase
+    @Override
+    public String toString() {
+        return "Nombre: " + nombre + ", Correo: " + correo;
+    }
+
+}
+//______________________________________________________________________________________________________________//
+// Clase Cartelera
+class Cartelera {
+    private String diaSemana;
+    private List<Pelicula> peliculas;
+
+
+    // Constructor de la clase Cartelera
+    public Cartelera(String diaSemana ) {
+        this.diaSemana = diaSemana;
+        this.peliculas = new ArrayList<>();
+    }
+
+    // Getters y Setters Cartelera
+    public String getDiaSemana() {
+        return diaSemana;
+    }
+
+    public List<Pelicula> getPeliculas() {
+        return peliculas;
+    }
+
+    public void setDiaSemana(String diaSemana) {
+        this.diaSemana = diaSemana;
+    }
+
+    public void setPeliculas(List<Pelicula> peliculas) {
+        this.peliculas = peliculas;
+    }
+
+    // Métodos para añadir Película en la Cartelera
+    public void agregarPelicula(Pelicula pelicula) {
+        this.peliculas.add(pelicula);
+    }
+
+    // Método para mostrar todas las Películas (recorremos el Arraylist)
+    public void mostrarPeliculas() {
+        for (int i = 0; i < peliculas.size(); i++) {
+            Pelicula p = peliculas.get(i);
+            System.out.println((i + 1) + ".Título: " + p.getNombrePelicula());
+            System.out.println("Género: " + p.getGeneroPelicula());
+            System.out.println("Duración: " + p.getDuracion() + " minutos");
+            System.out.println("Fecha:" + getDiaSemana());
+            System.out.println("----------------------------");
+        }
+    }
+}
+//______________________________________________________________________________________________________________//
+// Clase Sala, está compuesta por las otras clases a cuaales hace de "controlodora" de las clases: Asientos y Horarios
+class Sala {
+    private int numeroSala;
+    private Horario horario;
+    private List<Asiento> asientos;
+
+    // Constructor de la clase Sala
+    public Sala(int numeroSala, Horario horario, int totalAsientos) {
+        this.numeroSala = numeroSala;
+        this.horario = horario;
+        this.asientos = new ArrayList<>();
+        // Inicializamos los asientos
+
+        for (int i = 1; i <= totalAsientos; i++) {
+            asientos.add(new Asiento(String.valueOf(i)));
+        }
+    }
+
+    // Getters y Setters
+    public int getNumeroSala() {
+        return numeroSala;
+    }
+
+    public Horario getHorario() {
+        return horario;
+    }
+
+    public List<Asiento> getAsientos() {
+        return asientos;
+    }
+
+    public void setNumeroSala(int numeroSala) {
+        this.numeroSala = numeroSala;
+    }
+
+    public void setHorario(Horario horario) {
+        this.horario = horario;
+    }
+
+    public void setAsientos(List<Asiento> asientos) {
+        this.asientos = asientos;
+    }
+
+    // Método para mostrar la información de la Sala
+    public void mostrarSala() {
+        System.out.println("Sala: " + numeroSala);
+        System.out.println("Horario: " + horario);
+        System.out.println("Asientos:");
+        for (Asiento a : asientos) {
+            System.out.println("\n-----------------------------------");
+        }
+    }
+    // Reservar un asiento dado su número (como String). También agregamos el manejo de errores: asiento no existe y asiento reservado
+    public boolean reservarAsiento(String numeroAsiento) {
+        for (Asiento a : asientos) {
+            if (a.getNumeroAsiento().equals(numeroAsiento)) {
+                if (!a.isReservado()) {
+                    a.reservar();
+                    return true;
+                } else {
+                    System.out.println("El asiento " + numeroAsiento + " ya está reservado.");
+                    return false;
+                }
+            }
+        }
+        System.out.println("El asiento " + numeroAsiento + " no existe.");
+        return false;
+    }
+}
+//______________________________________________________________________________________________________________//
+class Pelicula {
+     private String nombrePelicula;
+     private String generoPelicula;
+     private int duracion;
+
+     // Constructor de Pelicula
+    public Pelicula(String nombrePelicula, String generoPelicula, int duracion) {
+            this.nombrePelicula = nombrePelicula;
+            this.generoPelicula = generoPelicula;
+            this.duracion = duracion;
+
+
+        }
+
+    // Getters y Setters Pelicula
+    public String getNombrePelicula() {
+        return this.nombrePelicula;
+    }
+
+    public String getGeneroPelicula() {
+        return this.generoPelicula;
+    }
+
+    public int getDuracion() {
+        return this.duracion;
+    }
+
+    public void setNombrePelicula(String nombrePelicula) {
+        this.nombrePelicula = nombrePelicula;
+    }
+
+    public void setGeneroPelicula(String generoPelicula) {
+        this.generoPelicula = generoPelicula;
+    }
+
+    public void setDuracion(int duracion) {
+        this.duracion = duracion;
+    }
+
+    // Método para registrar Pélicula automáticamente en el ArrayList
+    public Pelicula(String nombrePelicula, String generoPelicula, int duracion, Cartelera cartelera) {
+        this(nombrePelicula, generoPelicula, duracion); // Llamamos al constructor de Película
+        cartelera.agregarPelicula(this); // Método perteneciente a la clase Cartelera. Enlaza el automatismo, para que se agregue solas las Películas a la lista Cartelera
+    }
+}
+
+//______________________________________________________________________________________________________________//
+    // Clase que se encarga de manejar fecha y hora de una entrada al cine
+class Horario {
+    private String horaInicio1; //
+    private String horaInicio2;
+
+    //Constructores de la clase
+    public Horario (String horaInicio1, String horaInicio2) {
+        this.horaInicio1 = horaInicio1;
+        this.horaInicio2 = horaInicio2;
+
+    }
+    // Getters y Setters Horario
+
+    public String getHoraInicio1() {
+    return this.horaInicio1;
+    }
+
+     public String getHoraInicio2() {
+     return this.horaInicio2;
+    }
+
+
+    public void setHoraInicio1() {
+        this.horaInicio1 = horaInicio1;
+    }
+
+    public void setHoraInicio2() {
+        this.horaInicio2 = horaInicio2;
+    }
+
+
+    @Override
+    public String toString() {
+        return "Estos son los horarios de las funciones que hay disponibles: Por favor, elige uno: " + horaInicio1 + " - " + horaInicio2;
+    }
+
+}
+//______________________________________________________________________________________________________________//
+class Asiento {
+    private String numeroAsiento; // Índicamos el número de asiento para luego poder reservarlo
+    private boolean reservado; // Índicamos el estado del asiento "Libre" o "Reservado"
+
+    // Constructor de la clase
+    public Asiento (String numeroAsiento) {
+        this.numeroAsiento = numeroAsiento;
+        this.reservado = false;
+    }
+    // Getters y Setters Asiento
+    public String getNumeroAsiento() {
+        return numeroAsiento;
+    }
+
+    public boolean isReservado() {
+        return reservado;
+    }
+
+    public void setNumeroAsiento(String numeroAsiento) {
+        this.numeroAsiento = numeroAsiento;
+    }
+
+    public void reservar() {
+        this.reservado = true;
+    }
+
+    public void liberar () {
+        this.reservado = false;
+    }
+
+    @Override
+    public String toString () {
+        return numeroAsiento + (reservado ? " (reservado) " : " (libre");
+    }
+
+
+}
+//______________________________________________________________________________________________________________//
+class Pago {
+    private double monto;
+    private MedioDePago medioDePago;
+    private Factura factura;
+
+
+    // Constructor clase Pago
+    public Pago (double monto, MedioDePago medioDePago, Factura factura) {
+        this.monto = monto;
+        this.medioDePago = medioDePago;
+        this.factura = factura;
+
+    }
+
+    // Getters y Setters Pago
+
+    public Double getMonto() {
+        return monto;
+    }
+
+    public MedioDePago getMedioDePago() {
+        return medioDePago;
+    }
+
+    public Factura getFactura() {
+        return factura;
+    }
+
+    public void setMonto(Double monto) {
+        this.monto = monto;
+    }
+
+    public void setMedioDePago(MedioDePago medioDePago) {
+        this.medioDePago = medioDePago;
+    }
+
+    public void setFactura(Factura factura) {
+        this.factura = factura;
+    }
+    // Método para procesar el proceso de pago completo
+    public void procesarPago () {
+        System.out.println("Procesando el pago...");
+        System.out.println("Monto: $" + monto);
+        System.out.println("Número Tarjeta" + medioDePago.getNumeroTarjeta());
+        System.out.println("Factura: " + factura.getNumeroFactura());
+        System.out.println("Usuario: " + factura.getNombreUsuario());
+        System.out.println("Pago realizado correctamente.");
+
+
+    }
+
+}
+
+//______________________________________________________________________________________________________________//
+// Clase abstracta para métodos de pago
+abstract class MedioDePago {
+    private String numeroTarjeta;
+    private int vencimientoTarjeta;
+    // Constructor MedioDePago
+    public MedioDePago (String numeroTarjeta, int vencimientoTarjeta) {
+        this.numeroTarjeta = numeroTarjeta;
+        this.vencimientoTarjeta = vencimientoTarjeta;
+
+    }
+    // Getters y Setters MedioDePago
+
+    public String getNumeroTarjeta() {
+        return numeroTarjeta;
+    }
+
+    public int getVencimientoTarjeta() {
+        return vencimientoTarjeta;
+    }
+
+    public void setNumeroTarjeta(String numeroTarjeta) {
+        this.numeroTarjeta = numeroTarjeta;
+    }
+
+    public void setVencimientoTarjeta(int vencimientoTarjeta) {
+        this.vencimientoTarjeta = vencimientoTarjeta;
+    }
+
+}
+
+//______________________________________________________________________________________________________________//
+// Implementación específica para tarjeta de crédito
+class TarjetaCredito extends MedioDePago {
+    private int cvvCredito;
+
+    // Constructor Tarjeta de crédito
+    public TarjetaCredito (String numeroTarjeta, int vencimientoTarjeta, int cvvCredito) {
+        super(numeroTarjeta, vencimientoTarjeta);
+        this.cvvCredito = cvvCredito;
+    }
+    // Getters y Setters Tarjeta de Crédito
+
+
+    public String getNumeroTarjeta() {
+        return super.getNumeroTarjeta();
+    }
+
+
+    public int getVencimientoTarjeta() {
+        return super.getVencimientoTarjeta();
+    }
+
+    public int getCvvCredito() {
+        return cvvCredito;
+    }
+
+
+    public void setNumeroTarjeta(String numeroTarjeta) {
+        super.setNumeroTarjeta(numeroTarjeta);
+    }
+
+
+    public void setVencimientoTarjeta(int vencimientoTarjeta) {
+        super.setVencimientoTarjeta(vencimientoTarjeta);
+    }
+
+    public void setCvvCredito(int cvvCredito) {
+        this.cvvCredito = cvvCredito;
+    }
+
+}
+
+//______________________________________________________________________________________________________________//
+// Implementación específica para tarjeta de débito
+class TarjetaDebito extends  MedioDePago {
+    private int cvvDebito;
+
+    // Constructor TarjetaDebito
+    public TarjetaDebito (String numeroTarjeta, int vencimientoTarjeta, int cvvDebito) {
+        super(numeroTarjeta, vencimientoTarjeta);
+        this.cvvDebito = cvvDebito;
+    }
+    // Getters y Setters Tarjeta de Débito
+
+    public String getNumeroTarjeta() {
+        return super.getNumeroTarjeta();
+    }
+
+    public int getVencimientoTarjeta() {
+        return super.getVencimientoTarjeta();
+    }
+
+    public int getCvvDebito() {
+        return cvvDebito;
+    }
+
+    public void setNumeroTarjeta(String numeroTarjeta) {
+        super.setNumeroTarjeta(numeroTarjeta);
+    }
+
+    public void setVencimientoTarjeta(int vencimientoTarjeta) {
+        super.setVencimientoTarjeta(vencimientoTarjeta);
+    }
+
+    public void setCvvDebito(int cvvDebito) {
+        this.cvvDebito = cvvDebito;
+    }
+
+}
+
+
+//______________________________________________________________________________________________________________//
+class Factura {
+    private String numeroFactura;
+    private String nombreUsuario;
+
+    // Constructor de clase factura
+     public Factura (String numeroFactura, String nombreUsuario) {
+         this.numeroFactura = numeroFactura;
+         this.nombreUsuario = nombreUsuario;
+     }
+     // Getters y Setters Factura
+
+    public String getNumeroFactura() {
+         return numeroFactura;
+    }
+
+    public String getNombreUsuario() {
+        return nombreUsuario;
+    }
+
+    public void setNumeroFactura(String numeroFactura) {
+         this.numeroFactura = numeroFactura;
+    }
+
+    public void setNombreUsuario(String nombreUsuario) {
+        this.nombreUsuario = nombreUsuario;
+    }
+
+    public String toString () {
+         return "Nombre de Usuario" + nombreUsuario + "Número de Factura" + numeroFactura;
+    }
+
+
+}
+
